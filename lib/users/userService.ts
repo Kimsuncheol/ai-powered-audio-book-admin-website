@@ -31,7 +31,7 @@ function docToUser(id: string, data: Record<string, unknown>): UserDocument {
     uid: id,
   } as UserDocument & { role?: string | null };
 
-  const rawRole = typeof user.role === 'string' ? user.role : null;
+  const rawRole: string | null = typeof user.role === 'string' ? user.role : null;
   const normalizedAdminRole = normalizeAdminRole(rawRole) ?? undefined;
 
   // Backward-compat:

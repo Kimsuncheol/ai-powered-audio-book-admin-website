@@ -31,6 +31,9 @@ export type AuditAction =
   | 'assign_report'
   | 'update_report_status'
   | 'resolve_report'
+  | 'update_setting'
+  | 'rollback_setting'
+  | 'view_setting_sensitive'
   | 'hide_review'
   | 'remove_review'
   | 'restore_review';
@@ -143,6 +146,119 @@ export interface ReportListQuery {
 }
 
 export type ReportServiceErrorCode =
+  | 'AUTH_REQUIRED'
+  | 'FORBIDDEN'
+  | 'VALIDATION_ERROR'
+  | 'NOT_FOUND'
+  | 'CONFLICT'
+  | 'INTERNAL_ERROR';
+
+// ---- Settings ----
+export type SettingCategory =
+  | 'general_app'
+  | 'feature_flags'
+  | 'moderation_policy'
+  | 'user_management_policy'
+  | 'review_policy'
+  | 'report_policy'
+  | 'ai_ops_policy'
+  | 'security_policy';
+
+export type SettingValueType =
+  | 'boolean'
+  | 'number'
+  | 'string'
+  | 'enum'
+  | 'json'
+  | 'string_list'
+  | 'number_list';
+
+export type SettingEnvironmentScope = 'global' | 'dev' | 'staging' | 'prod';
+
+export interface SettingValidationRules {
+  required?: boolean;
+  min?: number;
+  max?: number;
+  minLength?: number;
+  maxLength?: number;
+  regex?: string;
+}
+
+export type SettingValue =
+  | boolean
+  | number
+  | string
+  | null
+  | Record<string, unknown>
+  | string[]
+  | number[];
+
+export interface SettingDocument {
+  key: string;
+  category: SettingCategory;
+  label: string;
+  description?: string | null;
+  valueType: SettingValueType;
+  value: SettingValue;
+  allowedValues?: Array<string | number> | null;
+  validation?: SettingValidationRules | null;
+  editable: boolean;
+  sensitive: boolean;
+  secretRef?: string | null;
+  environmentScope?: SettingEnvironmentScope | null;
+  version: number;
+  lastUpdatedAt: Timestamp;
+  lastUpdatedBy?: string | null;
+  updatedByRole?: AdminRole | null;
+}
+
+export type SettingHistoryAction = 'update' | 'rollback';
+
+export interface SettingHistoryEntry {
+  id?: string;
+  settingKey: string;
+  category: SettingCategory;
+  action: SettingHistoryAction;
+  before?: Record<string, unknown> | null;
+  after?: Record<string, unknown> | null;
+  reason?: string | null;
+  actorUid: string;
+  actorRole: AdminRole;
+  timestamp: Timestamp;
+  versionBefore?: number | null;
+  versionAfter?: number | null;
+}
+
+export interface SettingListFilters {
+  search?: string;
+  category?: SettingCategory | 'all';
+  editable?: 'all' | 'editable' | 'read_only';
+  sensitive?: 'all' | 'sensitive' | 'non_sensitive';
+}
+
+export type SettingSortField = 'key' | 'category' | 'lastUpdatedAt';
+export type SettingSortDirection = 'asc' | 'desc';
+
+export interface SettingListQuery {
+  filters?: SettingListFilters;
+  sortField?: SettingSortField;
+  sortDirection?: SettingSortDirection;
+  limit?: number;
+}
+
+export interface SettingUpdateInput {
+  value: SettingValue;
+  reason: string;
+  expectedVersion?: number;
+}
+
+export interface SettingRollbackInput {
+  historyEntryId: string;
+  reason: string;
+  expectedVersion?: number;
+}
+
+export type SettingServiceErrorCode =
   | 'AUTH_REQUIRED'
   | 'FORBIDDEN'
   | 'VALIDATION_ERROR'
