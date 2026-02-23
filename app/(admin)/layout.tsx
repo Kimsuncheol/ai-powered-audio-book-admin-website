@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { CircularProgress, Box } from '@mui/material';
 import { useAuth } from '@/contexts/AuthContext';
 import AdminLayout from '@/components/layout/AdminLayout';
@@ -21,6 +21,8 @@ export default function ProtectedAdminLayout({
 }) {
   const { isAuthenticated, isLoading } = useAuth();
   const router = useRouter();
+  const pathname = usePathname();
+  const isDashboardRoute = pathname === '/';
 
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
@@ -29,6 +31,10 @@ export default function ProtectedAdminLayout({
   }, [isLoading, isAuthenticated, router]);
 
   if (isLoading) {
+    if (isDashboardRoute) {
+      return <AdminLayout>{children}</AdminLayout>;
+    }
+
     return (
       <Box
         sx={{

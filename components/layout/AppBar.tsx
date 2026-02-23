@@ -12,6 +12,7 @@ import {
   Chip,
   Typography,
   Divider,
+  Skeleton,
 } from "@mui/material";
 import {
   Logout,
@@ -30,7 +31,7 @@ const ROLE_LABELS: Record<string, string> = {
 };
 
 export default function AdminAppBar() {
-  const { firebaseUser, role, signOut } = useAuth();
+  const { firebaseUser, role, signOut, isLoading } = useAuth();
   const router = useRouter();
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const { mode, setMode } = useContext(ColorModeContext);
@@ -42,6 +43,48 @@ export default function AdminAppBar() {
   };
 
   const initials = firebaseUser?.email?.[0]?.toUpperCase() ?? "?";
+
+  if (isLoading) {
+    return (
+      <MuiAppBar
+        position="fixed"
+        sx={{
+          width: `calc(100% - ${DRAWER_WIDTH}px)`,
+          ml: `${DRAWER_WIDTH}px`,
+        }}
+      >
+        <Toolbar>
+          <Box sx={{ flexGrow: 1 }} />
+          <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+            <Skeleton
+              variant="circular"
+              width={32}
+              height={32}
+              animation="wave"
+              sx={{ bgcolor: "rgba(255,255,255,0.2)" }}
+            />
+            <Skeleton
+              variant="rounded"
+              width={92}
+              height={24}
+              animation="wave"
+              sx={{
+                borderRadius: 10,
+                bgcolor: "rgba(255,255,255,0.2)",
+              }}
+            />
+            <Skeleton
+              variant="circular"
+              width={32}
+              height={32}
+              animation="wave"
+              sx={{ bgcolor: "rgba(255,255,255,0.25)" }}
+            />
+          </Box>
+        </Toolbar>
+      </MuiAppBar>
+    );
+  }
 
   return (
     <MuiAppBar
