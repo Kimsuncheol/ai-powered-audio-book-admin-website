@@ -34,6 +34,8 @@ export type AuditAction =
   | 'update_setting'
   | 'rollback_setting'
   | 'view_setting_sensitive'
+  | 'retry_ai_job'
+  | 'cancel_ai_job'
   | 'hide_review'
   | 'remove_review'
   | 'restore_review';
@@ -43,6 +45,7 @@ export type ResourceType =
   | 'book'
   | 'user'
   | 'review'
+  | 'ai_job'
   | 'ai_config'
   | 'report'
   | 'settings'
@@ -259,6 +262,119 @@ export interface SettingRollbackInput {
 }
 
 export type SettingServiceErrorCode =
+  | 'AUTH_REQUIRED'
+  | 'FORBIDDEN'
+  | 'VALIDATION_ERROR'
+  | 'NOT_FOUND'
+  | 'CONFLICT'
+  | 'INTERNAL_ERROR';
+
+// ---- AI Ops ----
+export type AiJobStatus =
+  | 'queued'
+  | 'running'
+  | 'succeeded'
+  | 'failed'
+  | 'cancelled';
+
+export type AiJobPriority = 'low' | 'normal' | 'high';
+
+export type AiInitiatedByType = 'system' | 'admin' | 'user' | 'pipeline';
+
+export type AiFailureCategory =
+  | 'provider_error'
+  | 'timeout'
+  | 'validation'
+  | 'safety'
+  | 'internal';
+
+export interface AiJobDocument {
+  id?: string;
+  jobId?: string;
+  workflowType: string;
+  status: AiJobStatus;
+  provider: string;
+  model: string;
+  priority?: AiJobPriority | null;
+  initiatedByType?: AiInitiatedByType | null;
+  initiatedByUid?: string | null;
+  targetEntityType?: string | null;
+  targetEntityId?: string | null;
+  requestId?: string | null;
+  retryCount: number;
+  maxRetries?: number | null;
+  startedAt?: Timestamp | null;
+  completedAt?: Timestamp | null;
+  durationMs?: number | null;
+  createdAt: Timestamp;
+  updatedAt: Timestamp;
+  errorCode?: string | null;
+  errorMessage?: string | null;
+  failureCategory?: AiFailureCategory | null;
+  fallbackUsed?: boolean | null;
+  fallbackProvider?: string | null;
+  fallbackModel?: string | null;
+  inputSummary?: Record<string, unknown> | null;
+  outputSummary?: Record<string, unknown> | null;
+  metadata?: Record<string, unknown> | null;
+  updatedBy?: string | null;
+}
+
+export type AiJobHistoryEventType =
+  | 'status_change'
+  | 'retry_requested'
+  | 'cancel_requested'
+  | 'worker_update';
+
+export interface AiJobHistoryEntry {
+  id?: string;
+  jobId: string;
+  eventType: AiJobHistoryEventType;
+  before?: Record<string, unknown> | null;
+  after?: Record<string, unknown> | null;
+  actorType?: 'system' | 'admin' | null;
+  actorUid?: string | null;
+  reason?: string | null;
+  timestamp: Timestamp;
+}
+
+export interface AiJobListFilters {
+  search?: string;
+  status?: AiJobStatus | 'all';
+  workflowType?: string | 'all';
+  provider?: string | 'all';
+  model?: string;
+  retryCountMin?: number | null;
+}
+
+export type AiJobSortField =
+  | 'createdAt'
+  | 'updatedAt'
+  | 'durationMs'
+  | 'status';
+
+export type AiJobSortDirection = 'asc' | 'desc';
+
+export interface AiJobListQuery {
+  filters?: AiJobListFilters;
+  sortField?: AiJobSortField;
+  sortDirection?: AiJobSortDirection;
+  limit?: number;
+}
+
+export interface RetryAiJobInput {
+  reason: string;
+  expectedStatus?: AiJobStatus;
+  expectedUpdatedAtMs?: number;
+}
+
+export interface CancelAiJobInput {
+  reason: string;
+  expectedStatus?: AiJobStatus;
+  expectedUpdatedAtMs?: number;
+}
+
+export type AiOpsServiceErrorCode =
   | 'AUTH_REQUIRED'
   | 'FORBIDDEN'
   | 'VALIDATION_ERROR'

@@ -63,7 +63,7 @@ const NAV_ITEMS: NavItem[] = [
     label: "AI Ops",
     href: "/ai-ops",
     icon: AiOpsIcon,
-    allowedRoles: ["super_admin"],
+    allowedRoles: ["super_admin", "admin"],
   },
   {
     label: "Reports",
