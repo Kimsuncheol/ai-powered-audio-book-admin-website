@@ -1,4 +1,4 @@
-import type { Timestamp } from 'firebase/firestore';
+import type { Timestamp, DocumentSnapshot } from 'firebase/firestore';
 import type { User } from 'firebase/auth';
 
 // ---- Role System ----
@@ -348,6 +348,30 @@ export interface AuditLogDocument {
   resourceId: string | null;
   metadata: Record<string, unknown>;
   timestamp: Timestamp;
+  // M4 optional extensions — absent on legacy documents
+  schemaVersion?: number;
+  actorType?: 'admin_user' | 'system';
+  result?: 'success' | 'failure';
+  reason?: string;
+  before?: Record<string, unknown>;
+  after?: Record<string, unknown>;
+}
+
+// ---- Audit Log Query Types ----
+
+export interface AuditLogFilters {
+  resourceType?: ResourceType | 'all';
+  action?: AuditAction | 'all';
+  actorRole?: AdminRole | 'all';
+  actorEmail?: string;   // client-side substring match
+  dateFrom?: Date | null;
+  dateTo?: Date | null;
+}
+
+export interface AuditLogPage {
+  entries: AuditLogDocument[];
+  nextCursor: DocumentSnapshot | null;
+  hasNextPage: boolean;
 }
 
 // ---- Auth Context Shape ----
